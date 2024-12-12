@@ -350,20 +350,21 @@ function clasificador2D()
                 hold on
                 quiver(0, 0, W(1), W(2), 0, 'black', 'LineWidth', 2, 'MaxHeadSize', 2);
                 hold off;
-                % hold on
-                % subplot(2,1,2)
-                % plot(kEpoch,peso1)
-                % legend('Actualización de pesos por iteración');
-                % xlabel('W1'), ylabel('t');
-                % title('Actualizaciones de pesos para el entrenamiento de ADALINE en modo regresor');
-                % 
-                % subplot(2,1,3)
+                hold on
+                subplot(2,1,2)
+                plot(kEpoch, peso1, 'DisplayName', 'W1');
+                plot(kEpoch, peso2, 'DisplayName', 'W2');
+                legend('Actualización de pesos por iteración');
+                xlabel('t'), ylabel('Pesos');
+                title('Actualizaciones de pesos para el entrenamiento para ADALINE en modo clasificador');
+                hold off
+                % subplot(2,2,3)
                 % plot(kEpoch,peso2)
                 % legend('Actualización de pesos por iteración');
                 % xlabel('W2'), ylabel('t');
                 % title('Actualizaciones de pesos para el entrenamiento de ADALINE en modo regresor');
-                % 
-                % hold of
+
+                hold of
 
 end
 % Clasificador
