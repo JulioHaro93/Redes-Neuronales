@@ -1,102 +1,97 @@
 clc;
-disp("____________EJEMPLO1_______________")
 
 
-data = readmatrix('input_p.txt.txt');
-data2 = readmatrix('target_t.txt.txt');
-maxepoch = 100;
+max_epochs = 100;    
+%Lectura de archivos
+%Para el ejemplo 1, se utiliza target_t
+%Para el ejemplo 2, se utiliza target_t2
+%Para el ejemplo 3 se utiliza target_t3
 
-n=size(data);
+X = readmatrix('input_p.txt');  % vectores por fila
+D = readmatrix('target_t4clases.txt'); % targets
+
+[num_samples, num_features] = size(X);
+
+%inicializamos los pesos con 0 para disminuir el número de iteraciones, así
+%como se inicializa el vector de pesos de manera aleatoria de 0 a 1, ésto
+%para reducir el número de iteraciones también
+W = rand(1, num_features);
+b = 0;
 
 
+hardlim = @(x) double(x >= 0);
 
-p =[vector1,vector2,vector3,vector4,vector5,vector6,vector7,vector8];
+for epoch = 1:max_epochs
+    errors = 0;
+    for i = 1:num_samples
+        
+        x = X(i, :);  
+        x = x(:)';
+
+        t = D(i);
+
+        % Propagación hacia adelante
+        a = hardlim(W * x' + b); 
+
+        error = t - a;
 
 
-W= rand(n)
-b=rand(1)
-t = data2';
-plotpv(p,t)
-
-i=1;
-vectoresSalidas=tuplitaVectorSalida.empty;
-for vector = p
-    vectorTupla = tuplitaVectorSalida(vector,data2(i));
-    i=i+1;
-    if(i==0)
-        vectoresSalidas(end)=vectorTupla;
+        if error ~= 0
+            W = W + learning_rate * error * x; 
+            b = b + learning_rate * error; 
+            errors = errors + 1;
+        end
     end
-    vectoresSalidas(end+1) =vectorTupla;
-
-end
-disp(vectoresSalidas(1).vector);
-disp(W(1:2)*vectoresSalidas(1).vector);
-a = hardlim((W(1:2)*vectoresSalidas(1).vector)+b);
-
-aux2=false;
-aux = 1;
-while(aux<100 && aux2== false)
-    for vector = vectoresSalidas
-        if(a == vectoresSalidas(aux).salida)
-            disp("hacen match");
-            if(aux == length(vectoresSalidas))
-                aux2=true;
-            end
-        else
-            disp("multiplica");
-            aux2=false;
-        end
-        if(aux == length(vectoresSalidas))
-                aux=1;
-        end
-        aux=aux+1;
+    if errors == 0
+        disp(['Convergió en la época ', num2str(epoch)]);
+        break;
     end
 end
 
 
-linehandle = plotpc(W',b);
+disp('Pesos entrenados:');
+disp(W);
+disp('Sesgo entrenado:');
+disp(b);
 
-%set(linehandle, 'Color', 'r');
-%set(linehandle,'Linestyle', '--')
+if num_features > 2
 
+    disp('Reduciendo a las dos primeras dimensiones para graficar.');
+    X_plot = X(:, 1:2);
+    W_plot = W(1:2);
+else
+    X_plot = X;
+    W_plot = W;
+end
 
+plotpv(X_plot', D');
+linehandle = plotpc(W_plot, b);
+set(linehandle, 'Linestyle', '-');
+hold on; 
+quiver(0, 0, W_plot(1), W_plot(2), 0, 'black', 'LineWidth', 2, 'MaxHeadSize', 2);
+hold off;
 
-%salida
+fileID = fopen('w3.txt', 'w');
 
-% 
-% x = data(:, 1);
-% y = data(:, 2);
-% scatter(x,y,'red','filled')
-% grid on;
-% axis equal;
-% xlim([-2 2]);
-% xline(0, LineWidth=1.5)
-% ylim([-2 2]);
-% yline(0,LineWidth=1.5)
-% 
-% hold on;
-% x_line = -2:2;
-% y_line = 0.7*x_line;
-% plot(x_line, y_line, 'b-', 'LineWidth', 1.5)
-% 
-% quiver(0,0,-0.5,0.5,LineWidth=2,Color='#000000',MaxHeadSize=2)
-% 
-% hold off;
-% disp("The next step is to find the weights and biases")
+if fileID == -1
+    error('No se pudo abrir el archivo.');
+end
 
 
-%quiver(zeros(size(x)), zeros(size(y)), x, y, 0, 'MaxHeadSize', 0.5);
-%xlabel('x');
-%ylabel('y');
-%title('Vectores en R^2 desde el origen');
-%grid on;
-%axis equal;
+fprintf(fileID, 'Pesos:\n');
+fprintf(fileID, mat2str(W_plot));
 
-% vector1 = data(1,:)';
-% vector2 = data(2,:)';
-% vector3 = data(3,:)';
-% vector4 = data(4,:)';
-% vector5 = data(5,:)';
-% vector6 = data(6,:)';
-% vector7 = data(7,:)';
-% vector8 = data(8,:)';
+fclose(fileID);
+
+fileID = fopen('b3.txt', 'w'); 
+
+if fileID == -1
+    error('No se pudo abrir el archivo.');
+end
+
+
+fprintf(fileID, 'Bias:\n');
+fprintf(fileID, mat2str(b));
+
+fclose(fileID);
+
