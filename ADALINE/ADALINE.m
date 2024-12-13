@@ -13,17 +13,6 @@ e =0;
 allErrors = [];
 numerillosAux = [];
 
-% Función de pérdida
-function j = J(y, ypred)
-    j = (y - ypred)^2;
-end
-
-% LMS
-function [w, b] = LMS(W, B, p, alpha, e)
-    w = W + 2 * alpha * e * p';
-    b = B + 2 * alpha * e;
-end
-
 % Purelin
 function a = purelin(W, p, b)
     a = W * p';
@@ -37,6 +26,9 @@ function erroresEpoca= regresor()
     if exist('pesos.txt', 'file')==2 
     delete('pesos.txt');
     end;
+    if exist('bias.txt', 'file') ==2
+        delete('bias.txt')
+    end
 
     disp("Preparando regresor");
     global epoch;
@@ -45,7 +37,8 @@ function erroresEpoca= regresor()
     erroresEpoca = [];
     epocas = [];
     error=0;
-    
+    bias = [0.000001;0.000001;0.000001];
+
     list = [];
     kEpoch=[];
     k=1;
@@ -70,8 +63,7 @@ function erroresEpoca= regresor()
         for peso = 1:size(list, 1)
             p = list(peso, :);
             
-            
-            a = purelin(W, p, [0; 0; 0]);
+            a = purelin(W, p, bias);
             if a == 0
                 continue
             end
@@ -82,13 +74,27 @@ function erroresEpoca= regresor()
             
             for i = 1:length(W)
                 W(i) = W(i) + (2*alpha*(t-a)*p(i));
+                bias(i)= bias(i) + (2*alpha*(t-a));
                 try
                     file = fopen("pesos.txt", "a");
                     if file == -1
                         error("No se pudo abrir el archivo.");
                     end
-                    disp(W(i))
+
                     fprintf(file, "%f\n", W(i));
+                    fclose(file);
+
+                catch ME
+                    disp("No se pudo abrir el archivo");
+                    disp(ME.message);
+                end
+                try
+                    file = fopen("bias.txt", "a");
+                    if file == -1
+                        error("No se pudo abrir el archivo.");
+                    end
+
+                    fprintf(file, "%f\n", bias(i));
                     fclose(file);
 
                 catch ME
@@ -121,17 +127,17 @@ function erroresEpoca= regresor()
 
     end
 
-    file = fopen("pesos.txt", "r"); % Abrir el archivo en modo de lectura
+    file = fopen("pesos.txt", "r"); 
     
     if file == -1
         error("No se pudo abrir el archivo.");
     end
     pesos =[];
-    % Inicializar listas para almacenar los pesos
+   
     peso1 = [];
     peso2 = [];
     peso3 = [];
-    counter = 1; % Contador para asignar valores de forma cíclica
+    counter = 1; 
     
     try
     while ~feof(file)
@@ -161,7 +167,7 @@ function erroresEpoca= regresor()
 
     for i = 1:3:length(pesos)
         if i <= length(pesos)
-            peso1(end+1) = pesos(i); % Primer peso
+            peso1(end+1) = pesos(i); 
         end
         if i+1 <= length(pesos)
             peso2(end+1) = pesos(i+1);
@@ -171,13 +177,63 @@ function erroresEpoca= regresor()
         end
     end
     
+    file = fopen("bias.txt", "r"); 
+    
+    if file == -1
+        error("No se pudo abrir el archivo.");
+    end
+    sesgos =[];
+   
+    sesgo1 = [];
+    sesgo2 = [];
+    sesgo3 = [];
+    counter = 1; 
+    
+    try
+    while ~feof(file)
+        line = strtrim(fgets(file)); 
+
+        if contains(line, "=") 
+            parts = split(line, "=");
+            value = str2double(strtrim(parts{2})); 
+        elseif ~isempty(line)
+            value = str2double(line); 
+        else
+            continue;
+        end
+        sesgos(end+1) = value;
+        end
+    catch ME
+        disp("Error al leer el archivo:");
+        disp(ME.message);
+    end
+    
+    fclose(file); 
+    
+    sesgo1 = [];
+    sesgo2 = [];
+    sesgo3 = [];
+    
+
+    for i = 1:3:length(pesos)
+        if i <= length(pesos)
+            sesgo1(end+1) = pesos(i);
+        end
+        if i+1 <= length(pesos)
+            sesgo2(end+1) = pesos(i+1);
+        end
+        if i+2 <= length(pesos)
+            sesgo3(end+1) = pesos(i+2); 
+        end
+    end
+    
     hold on
-    subplot(2,1,1)
+    subplot(3,1,1)
     plot(epocas,erroresEpoca), 
     legend('Error cuadrático medio')
     xlabel('Épocas'), ylabel('Errores')
     title('Gráfica de errores para el entrenamiento de ADALINE en modo regresor')
-    subplot(2,1,2)
+    subplot(3,1,2)
 
     hold on;
     plot(kEpoch, peso1, 'DisplayName', 'W1');
@@ -188,6 +244,17 @@ function erroresEpoca= regresor()
     xlabel('Iteraciones (kEpoch)');
     ylabel('Peso (W)');
     title('Actualizaciones de pesos para el entrenamiento de ADALINE en modo regresor');
+    
+    subplot(3,1,3)
+    hold on;
+    plot(kEpoch, sesgo1, 'DisplayName', 'bias1');
+    plot(kEpoch, sesgo2, 'DisplayName', 'bias2');
+    plot(kEpoch, sesgo3, 'DisplayName', 'bias3');
+    hold off;
+    legend; 
+    xlabel('Iteraciones (kEpoch)');
+    ylabel('Bias (sesgos)');
+    title('Actualizaciones de bias para el entrenamiento de ADALINE en modo regresor');
 
     return
 
@@ -210,7 +277,7 @@ function clasificador2D()
             disp("No fue posible eliminar el archivo, tal vez se encuentre abierto")
         end
     end;
-
+    
 
     list = [];
     kEpoch=[];
@@ -337,10 +404,7 @@ function clasificador2D()
                 end
                     disp("KEPOCH KEPOCH")
                 disp(kEpoch);
-                % disp(peso1(1))
-                % disp(peso2(1))
-                % disp(peso1(2))
-                % disp(peso2(2))
+
                 subplot(2,1,1)
                 plotpv(X_plot', T');
                 linehandle = plotpc(W, [0,0]);
@@ -358,20 +422,211 @@ function clasificador2D()
                 xlabel('t'), ylabel('Pesos');
                 title('Actualizaciones de pesos para el entrenamiento para ADALINE en modo clasificador');
                 hold off
-                % subplot(2,2,3)
-                % plot(kEpoch,peso2)
-                % legend('Actualización de pesos por iteración');
-                % xlabel('W2'), ylabel('t');
-                % title('Actualizaciones de pesos para el entrenamiento de ADALINE en modo regresor');
+
 
                 hold of
 
 end
-% Clasificador
+
+function clasificador4D()
+    global epoch;
+    maxE = 0.1;
+    alpha  = 0.000001;
+    erroresEpoca = [];
+    epocas = [];
+    error=0;
+    W = rand(1, 3);  
+    list = [];
+    
+    if exist('pesos.txt', 'file')==2
+        try
+        delete('pesos.txt');
+        catch
+            disp("No fue posible eliminar el archivo, tal vez se encuentre abierto")
+        end
+    end;
+    
+
+
+    list = [];
+    kEpoch=[];
+    k=1;
+    X=[];
+    T=[];
+    b=[];
+    X = readmatrix("./inputs/input_p.txt");
+                T = readmatrix("./targets/target4clases.txt");
+                [num_samples,num_features] = size(X);
+                W = rand(1,num_features);
+                b= rand(1,num_features);
+                errAux = 0;
+                aux = 0;
+                D1 = [0, 0; 0, 0];  
+                D2 = [1, 0; 1, 0]; 
+                D3 = [0, 1; 0, 1];  
+                D4 = [1, 1; 1, 1];  
+                
+
+                T = [D1; D2; D3; D4];
+                
+                [num_samples, num_features] = size(X);
+                num_classes = size(T, 2);
+                W = rand(num_classes, num_features);
+
+                while aux < epoch
+                    for peso = 1:size(X, 1)
+                    p = X(peso, :);
+                    a = purelin(W, p, b);
+                    a = a';
+                    t= T(peso,:);
+
+                    e = (t-a).^2;
+                    errAux = errAux + e;
+            
+                    for i = 1:size(W, 1)
+                        for j = 1:size(W, 2)
+                        
+                            W(i, j) = W(i, j) + (2 * alpha * (t(i) - a(i)) * p(j));
+                            b(i) = b(i);
+                        try
+                            file = fopen("pesos.txt", "a");
+                            if file == -1
+                                error("No se pudo abrir el archivo.");
+                            end
+            
+                            fprintf(file, "%f\n", W(i,j));
+                            fclose(file);
+            
+                        catch ME
+                            disp("No se pudo abrir el archivo");
+                            disp(ME.message);
+                        end
+                        end
+                        i=i+5;
+                    end
+            
+                    if (isnan(e) ==1)
+                        break
+                    end
+                    if(peso==8)
+                        error = errAux/size(X,1);
+                        erroresEpoca =[erroresEpoca; error];
+                        epocas = [epocas;aux+1];
+                        end
+                    k=k+1;
+                    kEpoch = [kEpoch, k];
+                    end
+                    aux = aux + 1;
+                    if (error < maxE)
+                    disp("Correcto!")
+                    disp("Número de épocas: ")
+                    disp(aux)
+                    break
+                end
+                end
+                
+                
+                file = fopen("pesos.txt", "r");
+                
+                if file == -1
+                    error("No se pudo abrir el archivo.");
+                end
+                disp('Pesos entrenados:');
+                disp(W);
+                disp('Sesgo entrenado:');
+                disp(b);
+                
+                pesos =[];
+                peso1 = [];
+                peso2 = [];
+                counter = 1;
+    
+                try
+                while ~feof(file)
+                    line = strtrim(fgets(file)); 
+    
+                    if contains(line, "=") 
+                        parts = split(line, "=");
+                        value = str2double(strtrim(parts{2})); 
+                    elseif ~isempty(line)
+                        value = str2double(line); 
+                    else
+                        continue;
+                    end
+                    pesos(end+1) = value;
+                    end
+                catch ME
+                    disp("Error al leer el archivo:");
+                    disp(ME.message);
+                end
+    
+                fclose(file); 
+    
+                peso1 = [];
+                peso2 = [];
+                peso3 =[];
+                peso4=[];
+    
+                for i = 1:4:length(pesos)
+                    if i <= length(pesos)
+                        peso1(end+1) = pesos(i);
+                    end
+                    if i+1 <= length(pesos)
+                        peso2(end+1) = pesos(i+1);
+                    end
+                    if i+2 <= length(pesos)
+                        peso3(end+1) = pesos(i+2);
+                    end
+                    if i+3 <= length(pesos)
+                        peso4(end+1) = pesos(i+3)
+                    end
+                end
+                
+                if num_features == 2
+                    X_plot = X(:, 1:2);
+                    W_plot = W(:, 1:2);
+                else
+                    X_plot = X;
+                    W_plot = W;
+                end
+                
+                X_plot = X_plot / max(abs(X_plot(:)));
+                W_plot = W_plot / max(abs(W_plot(:)));
+                
+
+                subplot(2, 1, 1);
+                plotpv(X_plot', T');
+                
+                hold on;
+                for c = 1:size(W_plot, 1)
+
+                    mBoundary = -W_plot(c, 1) / W_plot(c, 2);
+                    bBoundary = [0;0];
+                    disp(W_plot(c,:))
+                    disp(bBoundary);
+                    linehandle = plotpc(W_plot(c, :), bBoundary(c));
+                    set(linehandle, 'LineStyle', '-');
+                    hold off;
+                end
+                
+                hold on
+                subplot(2,1,2)
+                plot(kEpoch, peso1, 'DisplayName', 'W1');
+                plot(kEpoch, peso2, 'DisplayName', 'W2');
+                legend('Actualización de pesos por iteración');
+                xlabel('t'), ylabel('Pesos');
+                title('Actualizaciones de pesos para el entrenamiento para ADALINE en modo clasificador');
+                hold off
+
+
+                hold of
+
+end
+
+
+
 function clasificador()
     disp("Clasificador en construcción...");
-
-
     
     n = input("Por favor elija alguna de las opciones para el clasificador.\n" + ...
         "para clasificador de 2 clases está las opciones 1\n" + ...
@@ -386,54 +641,13 @@ function clasificador()
                 break
             case 2
                 disp("Ha elegido como clasificador para ADALINE para 4 clases distintas")
+                clasificador4D()
                 break
             otherwise
                 disp("Por favor agregue un dato correcto");
                 break
         end
     end
-
-
-    
-    % plotpv(X',T')
-    % linehandle = plotpc(W',b');
-    % set(linehandle, 'Linestyle','--')
-    %________________________________________
-    % subplot(2,1,1)
-    % plot(epocas,erroresEpoca), 
-    % legend('Error cuadrático medio')
-    % xlabel('Épocas'), ylabel('Errores')
-    % title('Gráfica de errores para el entrenamiento de ADALINE en modo regresor')
-    % subplot(2,1,2)
-    %%%hold of
-    % hold on;
-    % plot(kEpoch, peso1, 'DisplayName', 'W1');
-    % plot(kEpoch, peso2, 'DisplayName', 'W2');
-    % plot(kEpoch, peso3, 'DisplayName', 'W3');
-    % hold off;
-    % legend; 
-    % xlabel('Iteraciones (kEpoch)');
-    % ylabel('Peso (W)');
-    % title('Actualizaciones de pesos para el entrenamiento de ADALINE en modo regresor');
-
-    % subplot(2,1,2)
-    % plot(kEpoch,peso1)
-    % legend('Actualización de pesos por iteración');
-    % xlabel('W1'), ylabel('t');
-    % title('Actualizaciones de pesos para el entrenamiento de ADALINE en modo regresor');
-    % 
-    % subplot(2,1,3)
-    % plot(kEpoch,peso2)
-    % legend('Actualización de pesos por iteración');
-    % xlabel('W2'), ylabel('t');
-    % title('Actualizaciones de pesos para el entrenamiento de ADALINE en modo regresor');
-    % 
-    % subplot(2,1,4)
-    % plot(kEpoch,peso3)
-    % legend('Actualización de pesos por iteración');
-    % xlabel('W3'), ylabel('t');
-    % title('Actualizaciones de pesos para el entrenamiento de ADALINE en modo regresor');
-    % hold of
 
     return
 
