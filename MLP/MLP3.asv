@@ -11,9 +11,9 @@ global W
 function polinomio_4()
 % Archivos para guardar y cargar pesos y conteo de ejecuciones
     ejecuciones_file = "./polinomio4/ejecuciones.txt";
-    pesos1_file = "./polinomio4/pesos1.txt";
-    pesos2_file = "./polinomio4/pesos2.txt";
-    pesos3_file = "./polinomio4/pesos3.txt";
+    pesos1_file = "./pesos1.txt";
+    pesos2_file = "pesos2.txt";
+    pesos3_file = "pesos3.txt";
 
     % Leer o inicializar número de ejecuciones
     if isfile(ejecuciones_file)
@@ -29,7 +29,7 @@ function polinomio_4()
     fclose(fid);
 
     % Lee los datos desde el archivo
-    data = readmatrix("./Polinomios/Polinomio4.txt"); % Carga los datos (esperado n x 2)
+    data = readmatrix("Polinomio4.txt"); % Carga los datos (esperado n x 2)
 
     % Verifica que el archivo tenga dos columnas (entrada y objetivo)
     if size(data, 2) ~= 2
@@ -232,27 +232,21 @@ end
 function main()
     
     while 4<5
-        disp("Elija un valor del 1 al 5 para evaluar el aprendizaje")
-        disp("del perceptrón multicapa. El número de elección es el mismo número que se elije para el polinomio.")
-        disp("ara terminar la ejecución del programa, escriba 0")
-        eleccion =input("Teclee un valor: ");
+        disp("Elija un valor del 1 al 5 para evaluar el aprendizaje \ndel perceptrón multicapa. El número de elección es el mismo número que se elije para el polinomio.\npara terminar la ejecución del programa, escriba 0")
+        eleccion =input("Elija ");
         switch eleccion
             case 1
                 disp("Ha elejido aproximar el polinomio 1");
-                %polinomio_1();
                 
             case 2
                 disp("Ha elegido aproximar el polinomio 2");
-                %polinomio_2();
             case 3
                 disp("Ha elegido aproximar el polinomio 3");
-                %polinomio_3();
             case 4
                 disp("Ha elegido aproximar el polinomio 4");
                 polinomio_4();
             case 5
                 disp("Ha elegido aproximar el polinomio 5");
-                polinomio_5();
             case 0
                 disp("Ha decidido  termiar el programa");
                 break
