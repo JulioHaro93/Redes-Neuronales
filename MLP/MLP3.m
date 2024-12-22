@@ -9,6 +9,7 @@ global W
 
 function polinomio_2()
 % Archivos para guardar y cargar pesos y conteo de ejecuciones
+    num_val=0;
     ejecuciones_file = "./polinomio2/ejecuciones.txt";
     pesos1_file = "./polinomio2/pesos1.txt";
     pesos2_file = "./polinomio2/pesos2.txt";
@@ -21,26 +22,21 @@ function polinomio_2()
         num_ejecuciones = 0;
     end
 
-    % Incrementar el contador de ejecuciones y guardarlo
     num_ejecuciones = num_ejecuciones + 1;
     fid = fopen(ejecuciones_file, 'w');
     fprintf(fid, '%d', num_ejecuciones);
     fclose(fid);
+    errores =[];
+    data = readmatrix("./Polinomios/Polinomio2.txt");
 
-    % Lee los datos desde el archivo
-    data = readmatrix("./Polinomios/Polinomio2.txt"); % Carga los datos (esperado n x 2)
-
-    % Verifica que el archivo tenga dos columnas (entrada y objetivo)
     if size(data, 2) ~= 2
         error("El archivo debe contener exactamente dos columnas: entrada y objetivo.");
     end
 
-    % Inicializa los conjuntos vacíos
     train_data = [];
     val_data = [];
     test_data = [];
 
-    % Longitud del bloque (3 para entrenamiento, 1 para validación, 1 para prueba)
     block_size = 5;
 
     % Recorre los datos en bloques
@@ -72,9 +68,9 @@ function polinomio_2()
     val_objetivos = val_data(:, 2);
 
     % Genera o carga pesos
-    num_pesos1 = 16; % Número de neuronas en la primera capa
+    num_pesos1 =16; % Número de neuronas en la primera capa
     num_pesos2 = 14; % Número de neuronas en la segunda capa
-    rango_pesos = [0, 0.1];
+    rango_pesos = [0.5, 1];
 
     if num_ejecuciones == 1
         % Primera ejecución: inicializa aleatoriamente
@@ -89,8 +85,8 @@ function polinomio_2()
     end
 
     % Parámetros de entrenamiento
-    learning_rate = 0.001;
-    max_epocas = 3000;
+    learning_rate = 0.01;
+    max_epocas = 30000;
     earlyStopping = [];
     val_errors = [];
     errorTrain=0;
@@ -129,7 +125,7 @@ function polinomio_2()
         earlyStopping(end + 1) = error_total / length(entradas);
 
         % Validación cada 10 épocas
-        if mod(epoch, 10) == 0
+        if mod(epoch, 24) == 0
             val_error_total = 0;
             for i = 1:length(val_entradas)
                 entrada = val_entradas(i);
@@ -148,16 +144,23 @@ function polinomio_2()
             val_errors(end + 1) = val_error_promedio;
             fprintf("Época %d, Error validación promedio: %.8f\n", epoch, val_error_promedio);
         end
-        % Early stopping cada 300 épocas
-        if mod(epoch, 300) == 0
-            if epoch > 300 && earlyStopping(epoch) > earlyStopping(epoch-200) && earlyStopping(epoch-200) > earlyStopping(epoch-299)
-                disp("Error, el error va en crecimiento, se detuvo el programa por early stopping");
-                break;
+
+        % Early stopping cada 30 épocas
+        if mod(epoch, 4) == 0
+            if epoch > 40 && earlyStopping(epoch) > earlyStopping(epoch-39)
+ 
+                num_val = num_val+1;
+            else
+                num_val=0;
             end
+        end
+        if(num_val >=20)
+            disp("Error, el error va en crecimiento, se detuvo el programa por early stopping");
+            break;
         end
         
         % Imprime el error promedio por época
-        fprintf("Época %d, Error entrenamiento promedio: %.8f\n", epoch, error_total / length(entradas));
+        %fprintf("Época %d, Error entrenamiento promedio: %.8f\n", epoch, error_total / length(entradas));
     end
     error_train = 0;
 
@@ -188,26 +191,16 @@ function polinomio_2()
             pesos2 = pesos2 + learning_rate * (delta2 * a1');
             pesos1 = pesos1 + learning_rate * (delta1 * entrada);
         end
-    if(errorTrain >0.0004)
-        polinomio_4();
-    else
+    if(error_train <0.004)
         disp("ha terminado el aprendizaje")
+    else
+        
     end
     % Guarda los pesos finales
     save(pesos1_file, 'pesos1', '-ascii');
     save(pesos2_file, 'pesos2', '-ascii');
     save(pesos3_file, 'pesos3', '-ascii');
 
-    % Muestra los pesos finales
-    % disp("Pesos finales:");
-    % disp("Pesos capa 1:");
-    % disp(pesos1);
-    % disp("Pesos capa 2:");
-    % disp(pesos2);
-    % disp("Pesos capa 3:");
-    % disp(pesos3);
-
-    
     salidas_finales = zeros(length(entradas), 1);
     for i = 1:length(entradas)
         entrada = entradas(i);
@@ -215,7 +208,7 @@ function polinomio_2()
         a2 = logsig(pesos2 * a1);
         salidas_finales(i) = purelin(pesos3 * a2);
     end
-
+    
     figure;
     plot(entradas, objetivos, 'b-', 'DisplayName', 'Objetivo');
     hold on;
@@ -224,6 +217,10 @@ function polinomio_2()
     title('Comparación entre objetivo y salida final');
     xlabel('Entrada');
     ylabel('Salida');
+    hold off;
+    figure;
+    hold on;
+    plot(earlyStopping, '-', 'DisplayName','Objetivo');
     hold off;
 end
 
@@ -350,7 +347,7 @@ function polinomio_3()
         earlyStopping(end + 1) = error_total / length(entradas);
 
         % Validación cada 10 épocas
-        if mod(epoch, 10) == 0
+        if mod(epoch, 33) == 0
             val_error_total = 0;
             for i = 1:length(val_entradas)
                 entrada = val_entradas(i);
@@ -697,7 +694,7 @@ function main()
                 disp("Ha decidido  termiar el programa");
                 break
             otherwise
-                Disp("No tengo esa opción")
+                disp("No tengo esa opción")
 
         end
 
