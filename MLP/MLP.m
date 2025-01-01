@@ -1,6 +1,6 @@
 clc;
 
-maxEpoch = 30000;
+maxEpoch = 100000;
 
 n=0;
 
@@ -10,7 +10,7 @@ global W
 
 function main()
     % Lee los datos desde el archivo
-    data = readmatrix("Polinomio4.txt"); % Carga los datos (esperado n x 2)
+    data = readmatrix("./Polinomios/Polinomio3.txt"); % Carga los datos (esperado n x 2)
 
     % Verifica que el archivo tenga dos columnas (entrada y objetivo)
     if size(data, 2) ~= 2
@@ -54,16 +54,16 @@ function main()
     val_objetivos = val_data(:, 2);
 
     % Genera pesos iniciales aleatorios
-    num_pesos1 = 16; % Número de neuronas en la primera capa
-    num_pesos2 = 14; % Número de neuronas en la segunda capa
+    num_pesos1 = 10; % Número de neuronas en la primera capa
+    num_pesos2 = 10; % Número de neuronas en la segunda capa
     rango_pesos = [0, 0.1];
     pesos1 = rand(num_pesos1, 1) * (rango_pesos(2) - rango_pesos(1)) + rango_pesos(1);
     pesos2 = rand(num_pesos2, num_pesos1) * (rango_pesos(2) - rango_pesos(1)) + rango_pesos(1);
     pesos3 = rand(1, num_pesos2) * (rango_pesos(2) - rango_pesos(1)) + rango_pesos(1);
 
     % Parámetros de entrenamiento
-    learning_rate = 0.01;
-    max_epocas = 3000;
+    learning_rate = 0.3;
+    max_epocas = 60000;
     earlyStopping = [];
     val_errors = [];
 
@@ -123,25 +123,16 @@ function main()
         end
 
         % Early stopping cada 300 épocas
-        if mod(epoch, 300) == 0
-            if epoch > 300 && earlyStopping(epoch) > earlyStopping(epoch-200) && earlyStopping(epoch-200) > earlyStopping(epoch-299)
-                disp("Error, el error va en crecimiento, se detuvo el programa por early stopping");
-                break;
-            end
-        end
+        % if mod(epoch, 6600) == 0
+        %     if epoch > 300 && earlyStopping(epoch) > earlyStopping(epoch-1000) && earlyStopping(epoch-2000) > earlyStopping(epoch-3000)
+        %         disp("Error, el error va en crecimiento, se detuvo el programa por early stopping");
+        %         break;
+        %     end
+        % end
 
         % Imprime el error promedio por época
         fprintf("Época %d, Error entrenamiento promedio: %.8f\n", epoch, error_total / length(entradas));
     end
-
-    % Muestra los pesos finales
-    disp("Pesos finales:");
-    disp("Pesos capa 1:");
-    disp(pesos1);
-    disp("Pesos capa 2:");
-    disp(pesos2);
-    disp("Pesos capa 3:");
-    disp(pesos3);
 
     % Gráfica de la salida final vs objetivo
     salidas_finales = zeros(length(entradas), 1);
@@ -153,14 +144,20 @@ function main()
     end
 
     figure;
-    plot(entradas, objetivos, 'b-', 'DisplayName', 'Objetivo');
+    plot(entradas, objetivos, 'o', 'DisplayName', 'Objetivo');
     hold on;
-    plot(entradas, salidas_finales, 'r--', 'DisplayName', 'Salida final');
+    plot(entradas, salidas_finales, 'x', 'DisplayName', 'Salida final');
     legend;
     title('Comparación entre objetivo y salida final');
     xlabel('Entrada');
     ylabel('Salida');
     hold off;
+    figure;
+    plot(earlyStopping, '-', 'DisplayName', 'Error de entrenamiento');
+    title('Error de entrenamiento por época');
+    xlabel('Época');
+    ylabel('Error');
+legend;
 end
 
 
