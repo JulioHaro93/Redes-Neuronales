@@ -10,7 +10,7 @@ global W
 
 function main()
     % Lee los datos desde el archivo
-    data = readmatrix("./Polinomios/Polinomio3.txt"); % Carga los datos (esperado n x 2)
+    data = readmatrix("./Polinomios/Polinomio4.txt"); % Carga los datos (esperado n x 2)
 
     % Verifica que el archivo tenga dos columnas (entrada y objetivo)
     if size(data, 2) ~= 2
