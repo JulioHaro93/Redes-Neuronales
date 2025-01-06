@@ -1,0 +1,14 @@
+Mejías César, Yuleidys, Carrasco Velar, Ramón, Ochoa Izquierdo, Isbel, & Moreno Lemus, Edel. (2013). Funciones de transferencia en el perceptrón multicapa: efecto de su combinación en entrenamiento local y distribuido. Revista Cubana de Informática Médica, 5(2), 186-199. Recuperado en 02 de enero de 2025, de http://scielo.sld.cu/scielo.php?script=sci_arttext&pid=S1684-18592013000200009&lng=es&tlng=es.
+
+Sánchez, G., Pérez, H., & Nakano, M.. (2004). Red Neuronal Creciente Usando Perturbación Simultánea. Información tecnológica, 15(5), 45-52. https://dx.doi.org/10.4067/S0718-07642004000500008
+
+Haykin S., Neural Networks: A Comprehensive Approach, IEEE Computer Society Press, Piscataway, USA (1994).
+
+Mehra P. y B. Wah, Artificial Neural Networks, IEEE Computer Society Press, Piscataway, USA (1997).
+
+Quiñones Huatangari, Lenin, Ochoa Toledo, Luis, Gamarra Torres, Oscar, Bazán Correa, José, Delgado Soto, Jorge, & Kemper Valverde, Nicolás. (2020). Red neuronal artificial para estimar un índice de calidad de agua. Enfoque UTE, 11(2), 109-120. https://doi.org/10.29019/enfoque.v11n2.633
+
+Flórez López, R., Lévy Mangin, J. P. y Fernández Fernández, J. M. (2008). Las redes neuronales artificiales. Netbiblo: Tirant lo Blanch.
+
+Pérez Ramírez, Fredy Ocaris, & Fernández Castaño, Horacio. (2007). LAS REDES NEURONALES Y LA EVALUACIÓN DEL RIESGO DE CRÉDITO. Revista Ingenierías Universidad de Medellín, 6(10), 77-91. Retrieved January 02, 2025, from http://www.scielo.org.co/scielo.php?script=sci_arttext&pid=S1692-33242007000100007&lng=en&tlng=es.
+

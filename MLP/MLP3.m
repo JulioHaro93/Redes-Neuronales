@@ -259,7 +259,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 60000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -465,7 +465,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 30000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -631,7 +631,7 @@ else
 end
 
 learning_rate = 0.3;
-max_epocas = 60000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -835,7 +835,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 30000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 epochs =[];
@@ -891,6 +891,8 @@ for epoch = 1:max_epocas
     end
     epochs(end +1) = epoch;
 end
+disp(val_errors);
+disp(epochs)
 
 % Guardar los pesos y bias finales
 save(pesos1_file, 'pesos1', '-ascii');
@@ -1013,7 +1015,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 30000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -1205,7 +1207,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 30000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 epochs =[];
@@ -1261,8 +1263,9 @@ for epoch = 1:max_epocas
     end
     epochs(end +1) = epoch;
 end
+disp(val_errors);
+disp(epochs);
 
-% Guardar los pesos y bias finales
 save(pesos1_file, 'pesos1', '-ascii');
 save(pesos2_file, 'pesos2', '-ascii');
 save(bias1_file, 'bias1', '-ascii');
@@ -1375,7 +1378,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 60000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -1581,7 +1584,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 30000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -1778,7 +1781,7 @@ else
 end
 
 learning_rate = 0.0007;
-max_epocas = 300;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 errorTrain=0;

@@ -96,7 +96,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 30000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -258,8 +258,8 @@ else
     bias3 = load(bias3_file);
 end
 
-learning_rate = 0.3;
-max_epocas = 60000;
+learning_rate = 0.01;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -465,7 +465,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 30000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -631,7 +631,7 @@ else
 end
 
 learning_rate = 0.3;
-max_epocas = 60000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -835,7 +835,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 30000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 epochs =[];
@@ -891,7 +891,8 @@ for epoch = 1:max_epocas
     end
     epochs(end +1) = epoch;
 end
-
+disp(val_errors);
+disp(epochs)
 % Guardar los pesos y bias finales
 save(pesos1_file, 'pesos1', '-ascii');
 save(pesos2_file, 'pesos2', '-ascii');
@@ -1013,7 +1014,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 30000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -1205,7 +1206,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 30000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 epochs =[];
@@ -1374,8 +1375,8 @@ else
     bias3 = load(bias3_file);
 end
 
-learning_rate = 0.3;
-max_epocas = 60000;
+learning_rate = 0.01;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -1581,7 +1582,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 30000;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 
@@ -1778,7 +1779,7 @@ else
 end
 
 learning_rate = 0.0007;
-max_epocas = 300;
+max_epocas = 5000;
 earlyStopping = [];
 val_errors = [];
 errorTrain=0;
@@ -1870,7 +1871,6 @@ for i = 1:length(entradas)
     error_train = error_train + error;
 
     % Backpropagation
-    % Gradientes
     delta3 = error;
     delta2 = (pesos3' * delta3) .* (a2 .* (1 - a2));
     delta1 = (pesos2' * delta2) .* (a1 .* (1 - a1));
@@ -1885,7 +1885,7 @@ if(error_train <0.004)
 else
 
 end
-% Guarda los pesos finales
+
 save(pesos1_file, 'pesos1', '-ascii');
 save(pesos2_file, 'pesos2', '-ascii');
 save(pesos3_file, 'pesos3', '-ascii');
@@ -1901,7 +1901,7 @@ for i = 1:length(entradas)
     pesos4 = pesos4(:)';
     a3 = a3(:);
 
-    salidas_finales(i) = purelin(pesos4 * a3); % Usa pesos4 para salida final
+    salidas_finales(i) = purelin(pesos4 * a3);
 end
 
 figure;
