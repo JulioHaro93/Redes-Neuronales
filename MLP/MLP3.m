@@ -7,13 +7,14 @@ n=0;
 global data
 global W
 
-function UnoSUno()
+
+function UnoSuno()
 num_val = 0;
-ejecuciones_file = "./polinomio1/1S1/ejecuciones.txt";
-pesos1_file = "./polinomio1/1S1/pesos1.txt";
-pesos2_file = "./polinomio1/1S1/pesos2.txt";
-bias1_file = "./polinomio1/1S1/bias1.txt";
-bias2_file = "./polinomio1/1S1/bias2.txt";
+ejecuciones_file = "./polinomio3/1S1/ejecuciones.txt";
+pesos1_file = "./polinomio3/1S1/pesos1.txt";
+pesos2_file = "./polinomio3/1S1/pesos2.txt";
+bias1_file = "./polinomio3/1S1/bias1.txt";
+bias2_file = "./polinomio3/1S1/bias2.txt";
 
 if isfile(ejecuciones_file)
     num_ejecuciones = str2double(fileread(ejecuciones_file));
@@ -26,22 +27,23 @@ fid = fopen(ejecuciones_file, 'w');
 fprintf(fid, '%d', num_ejecuciones);
 fclose(fid);
 
-data = readmatrix("./Polinomios/Polinomio1.txt");
+data = readmatrix("./Polinomios/Polinomio3.txt");
 
 if size(data, 2) ~= 2
     error("El archivo debe contener exactamente dos columnas: entrada y objetivo.");
 end
 
-
 train_data = [];
 val_data = [];
 test_data = [];
+
 block_size = 5;
 
 for i = 1:block_size:size(data, 1)
     idx_train = i:min(i+2, size(data, 1));
     idx_val = min(i+3, size(data, 1));
     idx_test = min(i+4, size(data, 1));
+
     train_data = [train_data; data(idx_train, :)];
     if idx_val <= size(data, 1)
         val_data = [val_data; data(idx_val, :)];
@@ -55,48 +57,29 @@ fprintf("Datos de entrenamiento: %d muestras\n", size(train_data, 1));
 fprintf("Datos de validación: %d muestras\n", size(val_data, 1));
 fprintf("Datos de prueba: %d muestras\n", size(test_data, 1));
 
-entradas = train_data(:, 1);  
-objetivos = train_data(:, 2); 
+entradas = train_data(:, 1);
+objetivos = train_data(:, 2);
 
 val_entradas = val_data(:, 1);
 val_objetivos = val_data(:, 2);
 
-
-R = 1;
-S1 = 16;
-S2 = 1;
+num_pesos1 = 16;
 rango_pesos = [-1, 1];
 
-% Pesos 1
-if isfile(pesos1_file)
+if num_ejecuciones == 1
+    pesos1 = rand(num_pesos1, 1) * diff(rango_pesos) + rango_pesos(1);
+    pesos2 = rand(1, num_pesos1) * diff(rango_pesos) + rango_pesos(1);
+    bias1 = rand(num_pesos1, 1) * diff(rango_pesos) + rango_pesos(1);
+    bias2 = rand(1, 1) * diff(rango_pesos) + rango_pesos(1);
+else
     pesos1 = load(pesos1_file);
-else
-    pesos1 = rand(S1, R) * (rango_pesos(2) - rango_pesos(1)) + rango_pesos(1);
-end
-
-% Bias 1
-if isfile(bias1_file)
-    bias1 = load(bias1_file);
-else
-    bias1 = rand(S1, 1) * (rango_pesos(2) - rango_pesos(1)) + rango_pesos(1);
-end
-
-% Pesos 2
-if isfile(pesos2_file)
     pesos2 = load(pesos2_file);
-else
-    pesos2 = rand(S2, S1) * (rango_pesos(2) - rango_pesos(1)) + rango_pesos(1);
-end
-
-% Bias 2
-if isfile(bias2_file)
+    bias1 = load(bias1_file);
     bias2 = load(bias2_file);
-else
-    bias2 = rand(S2, 1) * (rango_pesos(2) - rango_pesos(1)) + rango_pesos(1);
 end
 
 learning_rate = 0.01;
-max_epocas = 5000;
+max_epocas = input("Ingrese el valor máximo de épocas: ");
 earlyStopping = [];
 val_errors = [];
 
@@ -107,47 +90,45 @@ for epoch = 1:max_epocas
         entrada = entradas(i);
         objetivo = objetivos(i);
 
-        % Propagación hacia adelante
         a1 = logsig(pesos1 * entrada + bias1);
         salida = purelin(pesos2 * a1 + bias2);
 
-        % Cálculo del error
         error = objetivo - salida;
         error_total = error_total + error;
 
-        % Ajuste de pesos y bias
         delta2 = error;
-        pesos2 = pesos2 + learning_rate * (delta2 * a1');
-        bias2 = bias2 + learning_rate * delta2;
-
         delta1 = (pesos2' * delta2) .* a1 .* (1 - a1);
-        pesos1 = pesos1 + learning_rate * (delta1 * entrada);
+
+        pesos2 = pesos2 + learning_rate * delta2 * a1';
+        pesos1 = pesos1 + learning_rate * delta1 * entrada;
+        bias2 = bias2 + learning_rate * delta2;
         bias1 = bias1 + learning_rate * delta1;
     end
 
     earlyStopping(end + 1) = error_total / length(entradas);
 
-    if mod(epoch, 10) == 0
+    if mod(epoch, 50) == 0
         val_error_total = 0;
         for i = 1:length(val_entradas)
             entrada = val_entradas(i);
             objetivo = val_objetivos(i);
+
             a1 = logsig(pesos1 * entrada + bias1);
             salida = purelin(pesos2 * a1 + bias2);
+
             val_error_total = val_error_total + abs(objetivo - salida);
         end
+        if earlyStopping(epoch) > earlyStopping(epoch-5)
+            num_val = num_val + 1;
+        else
+            num_val = 0;
+        end
+        if num_val == 5
+            disp("Detenido por earlyStopping");
+            disp(epoch)
+            break;
+        end
         val_errors(end + 1) = val_error_total / length(val_entradas);
-    end
-
-    if mod(epoch, 10) == 0 && epoch > 40 && earlyStopping(epoch) > earlyStopping(epoch - 1)
-        num_val = num_val + 1;
-    else
-        num_val = 0;
-    end
-
-    if num_val >= 20
-        disp("Error en crecimiento, deteniendo por early stopping.");
-        break;
     end
 end
 
@@ -157,8 +138,10 @@ save(bias1_file, 'bias1', '-ascii');
 save(bias2_file, 'bias2', '-ascii');
 
 salidas_finales = zeros(length(entradas), 1);
+
 for i = 1:length(entradas)
-    a1 = logsig(pesos1 * entradas(i) + bias1);
+    entrada = entradas(i);
+    a1 = logsig(pesos1 * entrada + bias1);
     salidas_finales(i) = purelin(pesos2 * a1 + bias2);
 end
 
@@ -182,13 +165,13 @@ end
 
 function UnoSSuno()
 num_val = 0;
-ejecuciones_file = "./polinomio1/1SS1/ejecuciones.txt";
-pesos1_file = "./polinomio1/1SS1/pesos1.txt";
-pesos2_file = "./polinomio1/1SS1/pesos2.txt";
-pesos3_file = "./polinomio1/1SS1/pesos3.txt";
-bias1_file = "./polinomio1/1SS1/bias1.txt";
-bias2_file = "./polinomio1/1SS1/bias2.txt";
-bias3_file = "./polinomio1/1SS1/bias3.txt";
+ejecuciones_file = "./polinomio2/1SS1/ejecuciones.txt";
+pesos1_file = "./polinomio2/1SS1/pesos1.txt";
+pesos2_file = "./polinomio2/1SS1/pesos2.txt";
+pesos3_file = "./polinomio2/1SS1/pesos3.txt";
+bias1_file = "./polinomio2/1SS1/bias1.txt";
+bias2_file = "./polinomio2/1SS1/bias2.txt";
+bias3_file = "./polinomio2/1SS1/bias3.txt";
 
 if isfile(ejecuciones_file)
     num_ejecuciones = str2double(fileread(ejecuciones_file));
@@ -201,7 +184,7 @@ fid = fopen(ejecuciones_file, 'w');
 fprintf(fid, '%d', num_ejecuciones);
 fclose(fid);
 
-data = readmatrix("./Polinomios/Polinomio1.txt");
+data = readmatrix("./Polinomios/Polinomio2.txt");
 
 if size(data, 2) ~= 2
     error("El archivo debe contener exactamente dos columnas: entrada y objetivo.");
@@ -212,7 +195,6 @@ val_data = [];
 test_data = [];
 
 block_size = 5;
-
 
 for i = 1:block_size:size(data, 1)
     idx_train = i:min(i+2, size(data, 1));
@@ -259,7 +241,7 @@ else
 end
 
 learning_rate = 0.01;
-max_epocas = 5000;
+max_epocas = input("Ingrese el valor máximo de épocas: ");
 earlyStopping = [];
 val_errors = [];
 
@@ -270,21 +252,17 @@ for epoch = 1:max_epocas
         entrada = entradas(i);
         objetivo = objetivos(i);
 
-        % Propagación hacia adelante
         a1 = logsig(pesos1 * entrada + bias1);
         a2 = logsig(pesos2 * a1 + bias2);
         salida = purelin(pesos3 * a2 + bias3);
 
-        % Cálculo del error
         error = objetivo - salida;
         error_total = error_total + error;
 
-        % Backpropagation
         delta3 = error;
         delta2 = (pesos3' * delta3) .* a2 .* (1 - a2);
         delta1 = (pesos2' * delta2) .* a1 .*(1 - a1);
 
-        % Actualización de pesos y bias
         pesos3 = pesos3 + learning_rate * delta3 * a2';
         pesos2 = pesos2 + learning_rate * delta2 * a1';
         pesos1 = pesos1 + learning_rate * delta1 * entrada;
@@ -295,7 +273,7 @@ for epoch = 1:max_epocas
 
     earlyStopping(end + 1) = error_total / length(entradas);
 
-    if mod(epoch, 6600) == 0
+    if mod(epoch, 10) == 0
         val_error_total = 0;
         for i = 1:length(val_entradas)
             entrada = val_entradas(i);
@@ -307,31 +285,30 @@ for epoch = 1:max_epocas
 
             val_error_total = val_error_total + abs(objetivo - salida);
         end
-        if earlyStopping(epoch) > earlyStopping(epoch-1000)
-            num_val = num_val +1;
+        if earlyStopping(epoch) > earlyStopping(epoch-5)
+            num_val = num_val + 1;
         else
-            num_val =0;
+            num_val = 0;
         end
-        if num_val ==5
-            disp(num_val)
-            disp("Detenido por earlyStopping")
-            break
+        if num_val == 3
+            disp("Detenido por earlyStopping");
+            disp(epoch)
+            break;
         end
 
         val_errors(end + 1) = val_error_total / length(val_entradas);
     end
 end
 
-% Guardar pesos y bias
 save(pesos1_file, 'pesos1', '-ascii');
 save(pesos2_file, 'pesos2', '-ascii');
 save(pesos3_file, 'pesos3', '-ascii');
 save(bias1_file, 'bias1', '-ascii');
 save(bias2_file, 'bias2', '-ascii');
 save(bias3_file, 'bias3', '-ascii');
-salidas_finales = zeros(length(entradas), 1);
 
 salidas_finales = zeros(length(entradas), 1);
+
 for i = 1:length(entradas)
     entrada = entradas(i);
     a1 = logsig(pesos1 * entrada + bias1);
@@ -358,6 +335,7 @@ legend;
 end
 
 
+
 function polinomio_1()
 
 disp("Para elegir el perceptrón multicapa de una capa seleccione 1")
@@ -365,7 +343,7 @@ disp("Para elegir el perceptrón multicapa de dos capas seleccione 2")
 n = input(": ");
 switch n
     case 1
-        UnoSUno()
+        UnoSuno()
     case 2
         UnoSSuno()
     case 3
